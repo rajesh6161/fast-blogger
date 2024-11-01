@@ -1,0 +1,48 @@
+# air.toml
+# Main Go file to run
+cmd = "go run ./cmd/fast-blogger/main.go"
+
+# Configurations for logging
+[log]
+level = "debug"                     # Options: trace, debug, info, warn, error, fatal, panic
+output = "stdout"                   # Log output file (e.g., air.log); defaults to stdout
+time_format = "2006-01-02 15:04:05"
+
+# Set paths to watch for changes
+[watch]
+# Paths to watch; add additional paths as needed
+paths = ["./cmd", "./internal", "./assets"]
+
+# Exclude specific paths if needed
+# (e.g., logs, tmp files, .git directories)
+exclude_dirs = ["docs", "migrations", "node_modules", "tmp", ".git"]
+
+# Set file extensions that should trigger a reload
+# For Go and any frontend files you want to watch (like templates or static files)
+include_exts = ["go", "tpl", "tmpl", "html", "css", "js"]
+
+# Exclude specific file extensions that don’t require reloading
+exclude_exts = ["log", "md"]
+
+# Configure build options
+[build]
+bin = "tmp/main"                                # Temporary build location
+cmd = "go build -o tmp/main ./cmd/fast-blogger" # Command to build the project
+delve = false                                   # Set true if you want to use delve debugger
+full_bin = "tmp/main"                           # Binary to run
+
+# Commands to execute before starting the server (optional)
+# e.g., if you need to run migrations or seed the database
+pre_start = "echo Starting Go Air"
+
+# Delay time in milliseconds before restarting after a file change
+[delay]
+start = 500   # Delay before starting the server
+restart = 500 # Delay before restarting after a change
+
+# Configurations for Air's color output
+[color]
+main = "magenta"
+msg = "cyan"
+debug = "yellow"
+error = "red"
