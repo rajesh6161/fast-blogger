@@ -34,7 +34,14 @@ func CreatePost(c *fiber.Ctx) error {
 	return c.JSON(post)
 }
 func GetAllPosts(c *fiber.Ctx) error {
-	posts := postservice.GetAllPosts()
+	posts, err := postservice.GetAllPosts()
+	if err != nil {
+		log.Printf("Error fetching posts: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"Code":    fiber.StatusInternalServerError,
+			"Message": fmt.Sprintf("Error fetching posts: %s", err.Error()),
+		})
+	}
 	return c.JSON(posts)
 }
 

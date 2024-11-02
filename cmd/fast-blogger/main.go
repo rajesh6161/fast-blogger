@@ -45,9 +45,6 @@ func main() {
 	if err := db.AutoMigrate(&models.Post{}, &models.User{}, &models.Like{}, &models.Comment{}); err != nil {
 		log.Fatalf("Failed to migrate models: %v", err)
 	}
-	// Initialize sample posts and users from the datastore
-	// datastore.InitUsers()
-	// datastore.InitPosts()
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {

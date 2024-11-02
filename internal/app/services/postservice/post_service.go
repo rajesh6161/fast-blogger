@@ -1,75 +1,78 @@
 package postservice
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rajesh6161/fast-blogger/internal/db/datastore"
+	"github.com/rajesh6161/fast-blogger/internal/db"
 	"github.com/rajesh6161/fast-blogger/internal/db/models"
 )
 
 func CreatePost(post *models.Post) error {
-	post.ID = uuid.New()
-	post.DateCreated = time.Now()
-	post.DateUpdated = time.Now()
-	datastore.Posts = append(datastore.Posts, post)
+	db := db.GetDB()
+	db.Create(&post)
 	return nil
 }
 
-func GetAllPosts() []*models.Post {
-	return datastore.Posts
+func GetAllPosts() ([]*models.Post, error) {
+	db := db.GetDB()
+	posts := []*models.Post{}
+	res := db.Preload("Author").Preload("Likes").Preload("Comments").Find(&posts)
+	if res.Error != nil {
+		return posts, res.Error
+	}
+	return posts, nil
 }
 
 func GetPostByID(id uuid.UUID) (*models.Post, error) {
-	for _, p := range datastore.Posts {
-		if p.ID == id {
-			return p, nil
-		}
+	db := db.GetDB()
+	post := &models.Post{ID: id}
+	res := db.Preload("Author").Preload("Likes").Preload("Comments").First(&post)
+	if res.Error != nil {
+		return post, res.Error
 	}
-	return &models.Post{}, errors.New("post not found")
+	return post, nil
 }
 
-func UpdatePost(post models.Post, id uuid.UUID) (*models.Post, error) {
-	old_post, err := GetPostByID(id)
+func UpdatePost(updatedPost models.Post, id uuid.UUID) (*models.Post, error) {
+	db := db.GetDB()
+	post, err := GetPostByID(id)
 	if err != nil {
 		return &models.Post{}, err
 	}
-	if len(post.Title) > 0 {
-		old_post.Title = post.Title
+	if len(updatedPost.Title) > 0 {
+		post.Title = updatedPost.Title
 	}
-	if len(post.Body) > 0 {
-		old_post.Body = post.Body
+	if len(updatedPost.Body) > 0 {
+		post.Body = updatedPost.Body
 	}
-	if len(post.ImageUrl) > 0 {
-		old_post.ImageUrl = post.ImageUrl
+	if len(updatedPost.ImageUrl) > 0 {
+		post.ImageUrl = updatedPost.ImageUrl
 	}
-	old_post.Likes = append(old_post.Likes, post.Likes...)
-	old_post.Comments = append(old_post.Comments, post.Comments...)
-	old_post.DateUpdated = time.Now()
+	post.Likes = append(post.Likes, updatedPost.Likes...)
+	post.Comments = append(post.Comments, updatedPost.Comments...)
+	post.DateUpdated = time.Now()
 
-	for i, p := range datastore.Posts {
-		if p.ID == id {
-			datastore.Posts[i] = old_post
-			return old_post, nil
-		}
+	res := db.Save(&post)
+	if res.Error != nil {
+		return post, res.Error
 	}
-	return &models.Post{}, errors.New("failed to update post")
+
+	return post, nil
 }
 
 func DeletePost(id uuid.UUID) error {
+	db := db.GetDB()
 	// before deleting first check if that post exists or not
 	post, err := GetPostByID(id)
 	if err != nil {
 		return err
 	}
-	i := 0
-	for _, p := range datastore.Posts {
-		if p.ID != post.ID {
-			datastore.Posts[i] = p
-			i++
-		}
+
+	res := db.Delete(&post)
+	if res.Error != nil {
+		return res.Error
 	}
-	datastore.Posts = datastore.Posts[:i]
+
 	return nil
 }

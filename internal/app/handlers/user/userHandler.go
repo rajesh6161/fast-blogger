@@ -46,7 +46,14 @@ func CreateUser(c *fiber.Ctx) error {
 
 // GetAllUsers retrieves all users
 func GetAllUsers(c *fiber.Ctx) error {
-	users := userservice.GetAllUsers()
+	users, err := userservice.GetAllUsers()
+	if err != nil {
+		log.Printf("Error fetching users: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"Code":    fiber.StatusInternalServerError,
+			"Message": fmt.Sprintf("Error fetching users: %s", err.Error()),
+		})
+	}
 	return c.JSON(users)
 }
 

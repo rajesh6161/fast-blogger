@@ -1,63 +1,75 @@
 package userservice
 
 import (
-	"errors"
-	"time"
-
 	"github.com/google/uuid"
-	"github.com/rajesh6161/fast-blogger/internal/db/datastore"
+	"github.com/rajesh6161/fast-blogger/internal/db"
 	"github.com/rajesh6161/fast-blogger/internal/db/models"
 )
 
 func CreateUser(user *models.User) error {
-	user.ID = uuid.New()                            // Generate a new UUID for the user
-	user.CreatedAt = time.Now()                     // Set creation time
-	user.UpdatedAt = user.CreatedAt                 // Set update time as the creation time
-	datastore.Users = append(datastore.Users, user) // Add the user to the data store
+	db := db.GetDB()
+	res := db.Create(&user)
+	if res.Error != nil {
+		return res.Error
+	}
 	return nil
 }
 
 // GetAllUsers returns all users in the data store
-func GetAllUsers() []*models.User {
-	return datastore.Users
+func GetAllUsers() ([]*models.User, error) {
+	db := db.GetDB()
+	users := []*models.User{}
+	res := db.Find(&users)
+	if res.Error != nil {
+		return users, res.Error
+	}
+	return users, nil
 }
 
 // GetUserByID retrieves a user by ID from the data store
 func GetUserByID(id uuid.UUID) (*models.User, error) {
-	for _, user := range datastore.Users {
-		if user.ID == id {
-			return user, nil
-		}
+	db := db.GetDB()
+	user := &models.User{ID: id}
+	res := db.First(&user)
+	if res.Error != nil {
+		return nil, res.Error
 	}
-	return nil, errors.New("user not found")
+	return user, nil
 }
 
 // UpdateUser updates an existing user's information
 func UpdateUser(updatedUser models.User, id uuid.UUID) (*models.User, error) {
-	for _, user := range datastore.Users {
-		if user.ID == id {
-			if len(updatedUser.Name) > 0 {
-				user.Name = updatedUser.Name
-			}
-			if len(updatedUser.Email) > 0 {
-				user.Email = updatedUser.Email
-			}
-			user.Password = updatedUser.Password // Store hashed password
-			user.UpdatedAt = time.Now()          // Update the last updated time
-			return user, nil
-		}
+	db := db.GetDB()
+	user, err := GetUserByID(id)
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("user not found")
+	if len(updatedUser.Name) > 0 {
+		user.Name = updatedUser.Name
+	}
+	if len(updatedUser.Email) > 0 {
+		user.Email = updatedUser.Email
+	}
+	if len(updatedUser.Password) > 0 {
+		user.Password = updatedUser.Password // Hash before storing
+	}
+	res := db.Save(&user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return user, nil
 }
 
 // DeleteUser removes a user by ID from the data store
 func DeleteUser(id uuid.UUID) error {
-	for i, user := range datastore.Users {
-		if user.ID == id {
-			// Remove the user from the slice
-			datastore.Users = append(datastore.Users[:i], datastore.Users[i+1:]...)
-			return nil
-		}
+	db := db.GetDB()
+	user, err := GetUserByID(id)
+	if err != nil {
+		return err
 	}
-	return errors.New("user not found")
+	res := db.Delete(&user)
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
 }
