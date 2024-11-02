@@ -7,24 +7,13 @@ import (
 )
 
 type Post struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title" validate:"required"`
-	Body        string    `json:"body" validate:"required"`
-	Author      string    `json:"author" validate:"required"`
-	ImageUrl    string    `json:"image_url"`
-	DateCreated time.Time `json:"date_created"`
-	DateUpdated time.Time `json:"date_updated"`
+	ID          uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	Title       string     `gorm:"not null" json:"title" validate:"required"`
+	Body        string     `gorm:"type:text;not null" json:"body" validate:"required"`
+	Author      *User      `json:"author" validate:"required"`
+	ImageUrl    string     `json:"image_url"`
+	Likes       []*Like    `json:"likes"`
+	Comments    []*Comment `json:"comments"`
+	DateCreated time.Time  `gorm:"autoCreateTime" json:"date_created"`
+	DateUpdated time.Time  `gorm:"autoUpdateTime" json:"date_updated"`
 }
-
-// type Post struct {
-// 	ID          int    `json:"id"`
-// 	Title       string `json:"title"`
-// 	Body        string `json:"body"`
-// 	Author      string `json:"author"`
-// 	ImageUrl    string `json:"image_url"`
-// 	DateCreated string `json:"date_created"`
-// 	Likes       int    `json:"likes"`
-// 	Dislikes    int    `json:"dislikes"`
-// 	Comments []Comment `json:"comments"`
-// 	DateUpdated string `json:"date_updated"`
-// }

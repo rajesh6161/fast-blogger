@@ -1,21 +1,48 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rajesh6161/fast-blogger/internal/app/handlers"
+	postHandler "github.com/rajesh6161/fast-blogger/internal/app/handlers/post"
+	userHandler "github.com/rajesh6161/fast-blogger/internal/app/handlers/user"
+	"github.com/rajesh6161/fast-blogger/internal/db"
 	"github.com/rajesh6161/fast-blogger/internal/db/datastore"
 )
 
+const (
+	DB_HOST     = "localhost"
+	DB_PORT     = "5432"
+	DB_USER     = "postgres"
+	DB_PASSWORD = "postgres"
+	DB_NAME     = "fast-blogger-db"
+)
+
+// for custom error handling
 type GlobalErrorHandlerResp struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
 
 func main() {
-	// Initialize sample posts from the datastore
+	// Set up the DSN for the database connection
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable", DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT)
+
+	// Initialize the database connection
+	database := db.Initialize(dsn)
+	if database == nil {
+		log.Fatal("Failed to initialize database connection")
+	}
+
+	// Migrate models
+	// if err := database.AutoMigrate(&models.Post{}, &models.User{}); err != nil {
+	// 	log.Fatalf("Failed to migrate models: %v", err)
+	// }
+	// Initialize sample posts and users from the datastore
+	datastore.InitUsers()
 	datastore.InitPosts()
+
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
@@ -25,11 +52,17 @@ func main() {
 		},
 	})
 
-	app.Get("/post/all", handlers.GetAllPosts)    // GET all posts
-	app.Get("/post/:id", handlers.GetPostByID)    // GET a post by id
-	app.Post("/post/create", handlers.CreatePost) // CREATE a new post
-	app.Put("/post/:id", handlers.UpdatePost)     // UPDATE a post by id
-	app.Delete("/post/:id", handlers.DeletePost)  // DELETE a post by id
+	app.Get("/post/all", postHandler.GetAllPosts)    // GET all posts
+	app.Get("/post/:id", postHandler.GetPostByID)    // GET a post by id
+	app.Post("/post/create", postHandler.CreatePost) // CREATE a new post
+	app.Put("/post/:id", postHandler.UpdatePost)     // UPDATE a post by id
+	app.Delete("/post/:id", postHandler.DeletePost)  // DELETE a post by id
+
+	app.Get("/user/all", userHandler.GetAllUsers)    // GET all users
+	app.Get("/user/:id", userHandler.GetUserByID)    // GET an user by id
+	app.Post("/user/create", userHandler.CreateUser) // CREATE an new user
+	app.Put("/user/:id", userHandler.UpdateUser)     // UPDATE an user by id
+	app.Delete("/user/:id", userHandler.DeleteUser)  // DELETE an user by id
 
 	// Start server on http://localhost:3000
 	log.Fatal(app.Listen(":3000"))

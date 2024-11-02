@@ -36,9 +36,9 @@ full_bin = "tmp/main"                           # Binary to run
 pre_start = "echo Starting Go Air"
 
 # Delay time in milliseconds before restarting after a file change
-[delay]
-start = 500   # Delay before starting the server
-restart = 500 # Delay before restarting after a change
+# [delay]
+# start = 500   # Delay before starting the server
+# restart = 500 # Delay before restarting after a change
 
 # Configurations for Air's color output
 [color]

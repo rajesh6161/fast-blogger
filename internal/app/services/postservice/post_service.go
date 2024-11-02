@@ -2,7 +2,6 @@ package postservice
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,37 +21,40 @@ func GetAllPosts() []*models.Post {
 	return datastore.Posts
 }
 
-func GetPostByID(id uuid.UUID) (models.Post, error) {
+func GetPostByID(id uuid.UUID) (*models.Post, error) {
 	for _, p := range datastore.Posts {
 		if p.ID == id {
-			return *p, nil
+			return p, nil
 		}
 	}
-	return models.Post{}, errors.New("post not found")
+	return &models.Post{}, errors.New("post not found")
 }
 
-func UpdatePost(post models.Post, id uuid.UUID) (models.Post, error) {
+func UpdatePost(post models.Post, id uuid.UUID) (*models.Post, error) {
 	old_post, err := GetPostByID(id)
-	log.Printf("old_post: %v", old_post)
 	if err != nil {
-		return models.Post{}, err
+		return &models.Post{}, err
 	}
-	if len(string(post.Title)) > 0 {
+	if len(post.Title) > 0 {
 		old_post.Title = post.Title
 	}
-	if len(string(post.Body)) > 0 {
+	if len(post.Body) > 0 {
 		old_post.Body = post.Body
 	}
-	old_post.ImageUrl = post.ImageUrl
+	if len(post.ImageUrl) > 0 {
+		old_post.ImageUrl = post.ImageUrl
+	}
+	old_post.Likes = append(old_post.Likes, post.Likes...)
+	old_post.Comments = append(old_post.Comments, post.Comments...)
 	old_post.DateUpdated = time.Now()
 
 	for i, p := range datastore.Posts {
 		if p.ID == id {
-			datastore.Posts[i] = &old_post
+			datastore.Posts[i] = old_post
 			return old_post, nil
 		}
 	}
-	return models.Post{}, errors.New("failed to update post")
+	return &models.Post{}, errors.New("failed to update post")
 }
 
 func DeletePost(id uuid.UUID) error {
