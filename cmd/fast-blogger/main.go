@@ -8,7 +8,7 @@ import (
 	postHandler "github.com/rajesh6161/fast-blogger/internal/app/handlers/post"
 	userHandler "github.com/rajesh6161/fast-blogger/internal/app/handlers/user"
 	"github.com/rajesh6161/fast-blogger/internal/db"
-	"github.com/rajesh6161/fast-blogger/internal/db/datastore"
+	"github.com/rajesh6161/fast-blogger/internal/db/models"
 )
 
 const (
@@ -18,6 +18,12 @@ const (
 	DB_PASSWORD = "postgres"
 	DB_NAME     = "fast-blogger-db"
 )
+
+/*
+RUN this query in Postgres
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+SELECT uuid_generate_v4();
+*/
 
 // for custom error handling
 type GlobalErrorHandlerResp struct {
@@ -30,18 +36,18 @@ func main() {
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable", DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT)
 
 	// Initialize the database connection
-	database := db.Initialize(dsn)
-	if database == nil {
+	db := db.Initialize(dsn)
+	if db == nil {
 		log.Fatal("Failed to initialize database connection")
 	}
 
 	// Migrate models
-	// if err := database.AutoMigrate(&models.Post{}, &models.User{}); err != nil {
-	// 	log.Fatalf("Failed to migrate models: %v", err)
-	// }
+	if err := db.AutoMigrate(&models.Post{}, &models.User{}, &models.Like{}, &models.Comment{}); err != nil {
+		log.Fatalf("Failed to migrate models: %v", err)
+	}
 	// Initialize sample posts and users from the datastore
-	datastore.InitUsers()
-	datastore.InitPosts()
+	// datastore.InitUsers()
+	// datastore.InitPosts()
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
