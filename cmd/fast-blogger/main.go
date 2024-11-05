@@ -59,19 +59,16 @@ func main() {
 		},
 	})
 
-	// app.Get("/", func(c *fiber.Ctx) error {
-	// 	return c.Render("layout", fiber.Map{
-	// 		"Title":   "Go Fiber Template Example",
-	// 		"Content": c.Render("home", fiber.Map{}, "layouts/main"),
-	// 	})
-	// })
 	app.Static("/static", "./assets")
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("index", fiber.Map{})
+		return c.Render("index", fiber.Map{}, "partials/layout")
 	})
 	app.Get("/register", func(c *fiber.Ctx) error {
-		return c.Render("register", fiber.Map{})
+		return c.Render("register", fiber.Map{}, "partials/layout")
+	})
+	app.Get("/contact", func(c *fiber.Ctx) error {
+		return c.Render("contact", fiber.Map{}, "partials/layout")
 	})
 
 	app.Get("/api/post/all", postHandler.GetAllPosts)    // GET all posts
