@@ -1,13 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Page</title>
-</head>
-<body>
-    <form>
-        <input placeholder="Full Name" type="text">
-    </form>
-</body>
-</html>
+<div id="top">
+    <button class="button-primary">Click</button>
+	<section id="content-wrap" class="site-page">
+	    <div class="row">
+            <div class="col-twelve">
+                <form name="cForm" id="cForm" method="post" action="">
+                    <fieldset>
+                      <div class="form-field">
+                        <input name="cName" type="text" id="cName" class="full-width" placeholder="Your Name" value="">
+                      </div>
+                      <div class="form-field">
+                        <input name="cEmail" type="text" id="cEmail" class="full-width" placeholder="Your Email" value="">
+                      </div>
+                      <div class="form-field">
+                        <input name="cWebsite" type="text" id="cWebsite" class="full-width" placeholder="Website" value="">
+                      </div>
+                      <div class="message form-field">
+                        <textarea name="cMessage" id="cMessage" class="full-width" placeholder="Your Message"></textarea>
+                      </div>
+                      <button type="submit" class="submit button-primary full-width-on-mobile">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
